@@ -2,6 +2,7 @@ package server;
 
 import client.P2PClient;
 import connections.ConnectionThread;
+import connections.SocketSelector;
 import util.MapWithListener;
 
 import javax.swing.*;
@@ -9,44 +10,27 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.ServerSocketChannel;
 
 import static connections.ConnectedSockets.allSockets;
 
-public class P2PServer implements Runnable {
+public class P2PServer {
 
     int port;
-    ServerSocket serverSocket;
+//    ServerSocket serverSocket;
+    ServerSocketChannel serverSocketChannel;
     public P2PServer(JTextField ipLabel) throws IOException {
         String port_from_env = System.getenv("SERVER_PORT");
         if (port_from_env == null) {
             throw new RuntimeException("SERVER_PORT environment variable is not set");
         }
         port = Integer.parseInt(port_from_env);
-        serverSocket = new ServerSocket(port);
+        serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.bind(new java.net.InetSocketAddress(port));
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.register(SocketSelector.selector, java.nio.channels.SelectionKey.OP_ACCEPT);
         ipLabel.setText("Server is listening on " + Inet4Address.getLocalHost() + ":" + port);
         System.out.println("Server is listening on port " + port);
     }
-
-     @Override
-     public void run() {
-
-         try {
-            while (true) {
-                Socket socket = serverSocket.accept();
-                String ip = socket.getInetAddress().getHostName();
-                if(allSockets.containsKey(ip)){
-                    System.out.println("Already Connected to IP");
-                    System.out.println("Closing Socket");
-                    socket.close();
-                    continue;
-                }
-                allSockets.put(ip,socket);
-                new Thread(new ConnectionThread(socket)).start();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
 }

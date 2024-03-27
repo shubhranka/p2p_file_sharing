@@ -7,6 +7,8 @@ import util.RedefinedUI;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import static connections.ConnectedSockets.allSockets;
 
@@ -66,6 +68,13 @@ public class LandingFrame extends JFrame {
     private final ActionListener connect = e -> {
         String[] connectionDetails = e.getActionCommand().split(":");
         String ip = connectionDetails[0];
+        if(ip.toLowerCase().equals("localhost") || ip.equals("127.0.0.1")) {
+            try {
+                ip = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
         int port = Integer.parseInt(connectionDetails[1]);
         if(allSockets.containsKey(ip)){
             System.out.println("Already Connected to : " + ip);

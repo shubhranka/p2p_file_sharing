@@ -1,3 +1,4 @@
+import connections.ConnectedSocketListener;
 import ui.LandingFrame;
 import util.RedefinedUI;
 import client.P2PClient;
@@ -17,9 +18,13 @@ public class App {
             JTextField ipLabel = frame.getIpLabel();
 
             // Server
-            P2PServer server = new P2PServer(ipLabel);
-            Thread serverThread = new Thread(server);
-            serverThread.start();
+            new P2PServer(ipLabel);
+
+            // Start Listener
+           ConnectedSocketListener connectedSocketListener = new ConnectedSocketListener();
+           Thread listenerThread = new Thread(connectedSocketListener);
+           listenerThread.start();
+
 
        }catch (Exception e) {
            e.printStackTrace();
