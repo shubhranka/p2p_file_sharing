@@ -1,12 +1,15 @@
 package client;
 
 import connections.ConnectionThread;
+import connections.SocketSelector;
 import util.MapWithListener;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
 import static connections.ConnectedSockets.allSockets;
@@ -22,12 +25,12 @@ public class P2PClient {
     }
 
     public void startConnection() {
-        try(Socket clientSocket = new Socket(ip, port)) {
-            connectionThread = new ConnectionThread(clientSocket);
-            connectionThread.run();
-            allSockets.put(ip, clientSocket);
-        } catch (Exception e) {
-            e.printStackTrace();
+        try  {
+            SocketSelector.clientChannel.connect(new java.net.InetSocketAddress(ip, port));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+
     }
 }

@@ -25,6 +25,8 @@ public class ConnectedSocketListener implements Runnable {
                         String ip = InetAddress.getLocalHost().getHostAddress();
                         System.out.println("Connected to : " + ip);
 
+                        clientChannel.write(ByteBuffer.wrap("Hello from server".getBytes()));
+
                         ConnectedSockets.allSockets.put(ip, clientChannel.socket());
                     }
                     if (key.isReadable()) {
@@ -37,8 +39,25 @@ public class ConnectedSocketListener implements Runnable {
                             continue;
                         }
                         buffer.flip();
-                        System.out.println("Received: " + new String(buffer.array()));
+                        byte[] byteArray = new byte[bytesRead];
+                        buffer.get(byteArray);
+                        System.out.println("Message from client: " + new String(byteArray));
+
                         buffer.clear();
+                    }
+                    if(key.isConnectable()){
+                        SocketChannel clientChannel = (SocketChannel) key.channel();
+                        if(clientChannel.isConnectionPending()){
+                            clientChannel.finishConnect();
+                        }
+                        if(clientChannel.finishConnect()){
+                            clientChannel.configureBlocking(false);
+                            clientChannel.register(SocketSelector.selector, SelectionKey.OP_READ);
+                            clientChannel.write(ByteBuffer.wrap("Hello from client".getBytes()));
+                            String ip = clientChannel.getRemoteAddress().toString().split(":")[0];
+
+                            ConnectedSockets.allSockets.put(ip, clientChannel.socket());
+                        }
                     }
                     selectedKeys.remove(key);
                 }

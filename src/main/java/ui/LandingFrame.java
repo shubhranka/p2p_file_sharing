@@ -15,6 +15,7 @@ import static connections.ConnectedSockets.allSockets;
 public class LandingFrame extends JFrame {
 
     private JTextField ipLabel;
+    private JButton openExplorer = new JButton("Open Explorer");
 
     public JTextField getIpLabel() {
         return ipLabel;
@@ -57,12 +58,25 @@ public class LandingFrame extends JFrame {
         connectionField.setBounds(10, 40, 500, 20);
         connectionField.addActionListener(connect);
 
+        openExplorer.setBounds(10, 70, 200, 20);
+        openExplorer.addActionListener(e -> {
+            try {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fileChooser.showOpenDialog(this);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
         this.add(ipLabel);
         this.add(connectionField);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(1500,300);
         this.setLayout(null);
         this.setVisible(true);
+        this.add(openExplorer);
+
     }
 
     private final ActionListener connect = e -> {
